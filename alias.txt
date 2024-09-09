@@ -1,0 +1,127 @@
+function nrdc { npm run dev }
+
+function commit { param([string]$message) git commit -m $message }
+
+function add { git add .}
+
+function push { param([string]$branch) git push origin $branch }
+
+function open {
+    param([int]$port)
+    Start-Process "http://localhost:$port"
+}
+
+
+
+function nrd {
+    param([int]$port = 3000)
+    Start-Process "powershell" -ArgumentList "npm run dev"
+    Start-Sleep -Seconds 5
+    Start-Process "http://localhost:$port"
+}
+function nrdr {
+    param([int]$port = 5173)
+    Start-Process "powershell" -ArgumentList "npm run dev"
+    Start-Sleep -Seconds 5
+    Start-Process "http://localhost:$port"
+}
+
+function glink {
+    param(
+        [string]$branch
+    )
+    
+    $remoteUrl = git remote get-url origin
+    $baseUrl = $remoteUrl -replace '\.git$', ''  # Remove .git suffix if present
+
+    if ($branch) {
+        $url = "$baseUrl/tree/$branch"
+    } else {
+        $url = $baseUrl
+    }
+    
+    Write-Output $url
+    Start-Process $url
+}
+
+function build { npm run build }
+
+function status {
+    git status
+}
+
+function branches {
+    git branch -a
+}
+
+function create-branch {
+    param([string]$branch)
+    git checkout -b $branch
+}
+
+function git-switch {
+    param([string]$branch)
+    git checkout $branch
+}
+
+function codes {
+    Set-Location "C:\Users\dell\Desktop\Codes\"
+}
+
+function opex {
+    param (
+        [string]$url
+    )
+    Start-Process "https://www.$url"
+}
+
+function bravei {
+    param (
+        [string]$url
+    )
+    $bravePath = "C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
+    Start-Process $bravePath "-incognito https://www.$url"
+}
+function brave{
+ param (
+        [string]$url
+    )
+    $bravePath = "C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
+    Start-Process $bravePath "https://www.$url"
+
+}
+
+function forward {
+    param (
+        [int]$port = 3000
+    )
+    
+    $ngrokProcess = Start-Process "powershell" -ArgumentList "ngrok http $port" -PassThru
+    
+    Start-Sleep -Seconds 3
+    
+    $ngrokUrl = & "powershell" -Command {
+        $ngrokInfo = curl http://localhost:4040/api/tunnels
+        $ngrokData = $ngrokInfo | ConvertFrom-Json
+        $ngrokData.tunnels[0].public_url
+    }
+
+    Start-Process $ngrokUrl
+}
+function cloudflare {
+    param (
+        [int]$port = 3000
+    )
+    
+    Start-Process "powershell" -ArgumentList "cloudflared tunnel --url http://localhost:$port"
+}
+function kube-config {
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location 'C:\Users\dell\.kube'; cat .\config"
+}
+
+
+
+function linux {
+    wsl -d Ubuntu -u root
+}
+
