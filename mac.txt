@@ -1,0 +1,99 @@
+
+# Only cd to default dir if we're in Terminal app AND opened in home dir
+if [[ "$TERM_PROGRAM" == "Apple_Terminal" && "$PWD" == "$HOME" ]]; then
+  cd /Users/devitaliya/Documents/Code
+fi
+alias cursor='open -a "Cursor"'
+alias nd='npm run dev'
+alias st='npm run start'
+alias bl='npm run build'
+alias br='git branch -a'
+alias add='git add .'
+alias f='git fetch origin'
+alias m='git merge origin/main'
+alias pushc='git push origin $(git rev-parse --abbrev-ref HEAD)'
+alias glog='git log --oneline --graph --decorate --all'
+alias c='clear'
+
+zipthis() {
+  local current_dir_name="${PWD##*/}"
+  local zip_file="${current_dir_name}.zip"
+
+  read "confirm_zip?Are you sure you want to zip '$current_dir_name'? (y/n): "
+  if [[ "$confirm_zip" != "y" && "$confirm_zip" != "Y" ]]; then
+    echo "Aborted."
+    return 1
+  fi
+
+  read "include_env?Include .env file in the zip? (y/n): "
+
+  local exclude_list=(
+    "node_modules/**"
+    "**/node_modules/**"
+    ".next/**"
+    "**/.next/**"
+    "dist/**"
+    "**/dist/**"
+  )
+
+  if [[ "$include_env" != "y" && "$include_env" != "Y" ]]; then
+    exclude_list+=(".env")
+  fi
+
+  echo "Creating $zip_file ..."
+  zip -r "$zip_file" . -x "${exclude_list[@]}"
+  echo "Done! Created $zip_file"
+}
+
+commit() {
+  git commit -m "$1"
+}
+
+gcc() {
+  git clone "$1"
+}
+
+push() {
+  git push origin "$1"
+}
+
+cbr() {
+  if git show-ref --verify --quiet refs/heads/"$1"; then
+    git checkout "$1"
+  else
+    git checkout -b "$1"
+  fi
+}
+
+glink() {
+  remoteUrl=$(git remote get-url origin)
+  baseUrl="${remoteUrl%.git}"
+
+  if [ -n "$1" ]; then
+    url="$baseUrl/tree/$1"
+  else
+    url="$baseUrl"
+  fi
+
+  open "$url"
+}
+autoload -Uz compinit
+compinit
+
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z} m:{A-Z}={a-z}'
+zstyle ':completion:*' list-colors ''
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' auto-menu yes
+zstyle ':completion:*' menu select=1
+
+autoload -U colors && colors
+export PROMPT='%F{cyan}%~%f %# '
+
+eval "$(/opt/homebrew/bin/brew shellenv)"
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
