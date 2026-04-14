@@ -8,16 +8,54 @@ alias nd='npm run dev'
 alias st='npm run start'
 alias bl='npm run build'
 alias br='git branch -a'
-alias add='git add .'
+alias ga='git add .'
 alias f='git fetch origin'
 alias m='git merge origin/main'
 alias pushc='git push origin $(git rev-parse --abbrev-ref HEAD)'
 alias glog='git log --oneline --graph --decorate --all'
 alias c='clear'
+alias cafe='caffeinate -dimsu'
+alias pdp='dotenv -e .env -- npx prisma db push'
+alias pst='dotenv -e .env -- npx prisma studio'
+alias pg='dotenv -e .env -- npx prisma generate'
+alias pglocal='dotenv -e .env.local -- npx prisma generate'
+alias pdplocal='dotenv -e .env.local -- npx prisma db push'
+alias pmg='dotenv -e .env --npx prisma migrate dev'
+
+eval "$(zoxide init zsh)"
+
+dockerclean() {
+  docker stop $(docker ps -aq) 2>/dev/null
+  docker rm $(docker ps -aq) 2>/dev/null
+  docker rmi -f $(docker images -aq) 2>/dev/null
+  docker volume rm $(docker volume ls -q) 2>/dev/null
+  docker system prune -a --volumes -f
+}
+
+yt() {
+  yt-dlp -f "bv*+ba/b" --merge-output-format mp4 "$1"
+}
+
+yta() {
+  yt-dlp -f "ba/b" -x "$1"
+}
+
+stopport() {
+  if [ -n "$1" ]; then
+    lsof -ti:"$1" | xargs kill -9
+  else
+    echo "Please provide a port number"
+    return 1
+  fi
+}
+
+gs() {
+  git status
+}
 
 zipthis() {
   local current_dir_name="${PWD##*/}"
-  local zip_file="${current_dir_name}.zip"
+  local zip_file="../${current_dir_name}.zip"
 
   read "confirm_zip?Are you sure you want to zip '$current_dir_name'? (y/n): "
   if [[ "$confirm_zip" != "y" && "$confirm_zip" != "Y" ]]; then
@@ -34,6 +72,8 @@ zipthis() {
     "**/.next/**"
     "dist/**"
     "**/dist/**"
+    ".git/**"
+    "**/.git/**"
   )
 
   if [[ "$include_env" != "y" && "$include_env" != "Y" ]]; then
@@ -45,7 +85,7 @@ zipthis() {
   echo "Done! Created $zip_file"
 }
 
-commit() {
+gc() {
   git commit -m "$1"
 }
 
@@ -53,8 +93,16 @@ gcc() {
   git clone "$1"
 }
 
-push() {
+gp() {
   git push origin "$1"
+}
+
+pull() {
+  if [ -n "$1" ]; then
+    git pull origin "$1"
+  else
+    git pull origin main
+  fi
 }
 
 cbr() {
@@ -92,8 +140,43 @@ export PROMPT='%F{cyan}%~%f %# '
 eval "$(/opt/homebrew/bin/brew shellenv)"
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-
+compdef _git cbr=git-checkout
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# Created by `pipx` on 2025-08-27 04:03:17
+export PATH="$PATH:/Users/devitaliya/.local/bin"
+alias pip="pip3"
+export PATH="$HOME/Library/Python/3.13/bin:$PATH"
+
+# Added by Antigravity
+export PATH="/Users/devitaliya/.antigravity/antigravity/bin:$PATH"
+
+# bun completions
+[ -s "/Users/devitaliya/.bun/_bun" ] && source "/Users/devitaliya/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
+
+# Mole shell completion
+if output="$(mole completion zsh 2>/dev/null)"; then eval "$output"; fi
+
+# Added by Antigravity
+export PATH="/Users/devitaliya/.antigravity/antigravity/bin:$PATH"
+
+autoload -Uz vcs_info
+precmd(){
+  vcs_info
+}
+
+zstyle ':vcs_info:*' enable git
+zstyle ':vcs_info:git:*' formats ' (%b)'
+
+setopt PROMPT_SUBST
+
+# FORCE prompt override
+PROMPT='%F{cyan}%~%f%F{yellow}${vcs_info_msg_0_}%f %# '
